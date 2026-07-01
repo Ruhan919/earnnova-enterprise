@@ -1,0 +1,17 @@
+{
+  "type": "web_service",
+  "name": "earnnova-enterprise",
+  "ownerId": "tea-d9220f0modhs739p4l80",
+  "repo": "https://github.com/Ruhan919/earnnova-enterprise",
+  "branch": "main",
+  "autoDeploy": true,
+  "serviceDetails": {
+    "env": "docker",
+    "dockerfilePath": "./Dockerfile",
+    "healthCheckPath": "/",
+    "healthCheckTimeout": 120,
+    "pullRequestPreviewsEnabled": false,
+    "numReplicas": 1,
+    "plan": "free"
+  }
+}

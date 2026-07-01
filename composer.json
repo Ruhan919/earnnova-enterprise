@@ -5,37 +5,11 @@
   "require": {
     "php": "^8.4",
     "laravel/framework": "^12.0",
-    "laravel/sanctum": "^4.0",
-    "laravel/horizon": "^6.0",
-    "laravel/telescope": "^6.0",
-    "laravel/octane": "^3.0",
-    "inertiajs/inertia-laravel": "^2.0",
-    "tightenco/ziggy": "^2.0",
-    "spatie/laravel-permission": "^6.0",
-    "spatie/laravel-activitylog": "^4.0",
-    "spatie/laravel-backup": "^9.0",
-    "spatie/laravel-csp": "^3.0",
-    "spatie/laravel-google-cloud-storage": "^6.0",
-    "spatie/laravel-sitemap": "^7.0",
-    "laravel/socialite": "^6.0",
-    "laravel/scout": "^12.0",
-    "meilisearch/meilisearch-php": "^2.0",
-    "pragmarx/google2fa": "^9.0",
-    "openai-php/laravel": "^0.12.0",
-    "predis/predis": "^3.0",
-    "barryvdh/laravel-debugbar": "^4.0",
-    "laravel/tinker": "^3.0"
+    "laravel/tinker": "^3.0",
+    "laravel/sanctum": "^4.0"
   },
   "require-dev": {
-    "pestphp/pest": "^4.0",
-    "pestphp/pest-plugin-laravel": "^4.0",
-    "pestphp/pest-plugin-faker": "^4.0",
-    "laravel/sail": "^2.0",
-    "nunomaduro/collision": "^9.0",
-    "nunomaduro/larastan": "^3.0",
-    "laravel/pint": "^2.0",
-    "rector/rector": "^2.0",
-    "squizlabs/php_codesniffer": "^4.0"
+    "laravel/sail": "^2.0"
   },
   "autoload": {
     "psr-4": {
@@ -54,26 +28,18 @@
       "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
       "@php artisan package:discover --ansi"
     ],
-    "post-update-cmd": [
-      "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
-    ],
     "post-root-package-install": [
       "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
     ],
     "post-create-project-cmd": [
       "@php artisan key:generate --ansi"
-    ],
-    "test": "vendor/bin/pest",
-    "analyse": "vendor/bin/phpstan analyse",
-    "lint": "vendor/bin/pint",
-    "refactor": "vendor/bin/rector"
+    ]
   },
   "config": {
     "optimize-autoloader": true,
     "preferred-install": "dist",
     "sort-packages": true,
     "allow-plugins": {
-      "pestphp/pest-plugin": true,
       "php-http/discovery": true
     }
   },
