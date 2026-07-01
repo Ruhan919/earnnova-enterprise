@@ -1,11 +1,11 @@
 {
   "name": "earnnova/enterprise",
   "type": "project",
-  "description": "EARNNOVA — Enterprise Earning Platform",
+  "description": "EARNNOVA \u2014 Enterprise Earning Platform",
   "require": {
     "php": "^8.4",
-    "laravel/framework": "^12.0",
-    "laravel/tinker": "^3.0",
+    "laravel/framework": "^11.0",
+    "laravel/tinker": "^2.0",
     "laravel/sanctum": "^4.0"
   },
   "require-dev": {
