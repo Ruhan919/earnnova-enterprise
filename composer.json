@@ -4,7 +4,8 @@
   "description": "EARNNOVA \u2014 Enterprise Earning Platform",
   "require": {
     "php": "^8.4",
-    "laravel/framework": "^11.0"
+    "laravel/framework": "^11.0",
+    "laravel/tinker": "^2.0"
   },
   "autoload": {
     "psr-4": {
@@ -18,25 +19,11 @@
       "Tests\\": "tests/"
     }
   },
-  "scripts": {
-    "post-autoload-dump": [
-      "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-      "@php artisan package:discover --ansi"
-    ],
-    "post-root-package-install": [
-      "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
-    ],
-    "post-create-project-cmd": [
-      "@php artisan key:generate --ansi"
-    ]
-  },
+  "scripts": {},
   "config": {
     "optimize-autoloader": true,
     "preferred-install": "dist",
-    "sort-packages": true,
-    "allow-plugins": {
-      "php-http/discovery": true
-    }
+    "sort-packages": true
   },
   "minimum-stability": "stable",
   "prefer-stable": true
