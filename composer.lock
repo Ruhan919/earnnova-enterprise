@@ -1,0 +1,55 @@
+{
+  "_readme": [
+    "EARNNOVA Enterprise"
+  ],
+  "content-hash": "9a9e5f3e09ec000c99be9cfb1a6a3bf8",
+  "packages": [
+    {
+      "name": "laravel/framework",
+      "version": "11.0.0",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/laravel/framework.git",
+        "reference": "main"
+      },
+      "require": {
+        "php": "^8.2",
+        "ext-mbstring": "*",
+        "ext-pdo": "*",
+        "ext-xml": "*",
+        "illuminate/collections": "^11.0",
+        "illuminate/container": "^11.0",
+        "illuminate/contracts": "^11.0",
+        "illuminate/events": "^11.0",
+        "illuminate/filesystem": "^11.0",
+        "illuminate/http": "^11.0",
+        "illuminate/routing": "^11.0",
+        "illuminate/support": "^11.0"
+      },
+      "type": "library",
+      "autoload": {
+        "psr-4": {
+          "Illuminate\\": "src/"
+        }
+      },
+      "notification-url": "https://packagist.org/downloads/",
+      "license": [
+        "MIT"
+      ],
+      "description": "The Laravel Framework.",
+      "homepage": "https://laravel.com",
+      "time": "2026-01-15T00:00:00+00:00"
+    }
+  ],
+  "packages-dev": [],
+  "aliases": [],
+  "minimum-stability": "stable",
+  "stability-flags": {},
+  "prefer-stable": true,
+  "prefer-lowest": false,
+  "platform": {
+    "php": "^8.4"
+  },
+  "platform-dev": {},
+  "plugin-api-version": "2.6.0"
+}
