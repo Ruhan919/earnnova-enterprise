@@ -1,0 +1,71 @@
+name: Deploy EARNNOVA
+
+on:
+  push:
+    branches: [main, staging]
+  pull_request:
+    branches: [main]
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: earnnova_test
+          POSTGRES_USER: earnnova
+          POSTGRES_PASSWORD: secret
+        ports:
+          - 5432:5432
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, pdo_pgsql, redis, pcntl, swoole
+          coverage: pcov
+
+      - run: composer install --no-interaction --prefer-dist
+      - run: cp .env.example .env
+      - run: php artisan key:generate
+
+      - name: PHPStan
+        run: vendor/bin/phpstan analyse --level=max --memory-limit=2G
+
+      - name: Pint
+        run: vendor/bin/pint --test
+
+      - name: Pest Tests
+        run: php artisan test --parallel
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_DATABASE: earnnova_test
+          DB_USERNAME: earnnova
+          DB_PASSWORD: secret
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run type-check
+
+  deploy:
+    needs: quality
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy to Vapor
+        uses: vapor-actions/deploy@v2
+        with:
+          vapor_token: ${{ secrets.VAPOR_API_TOKEN }}
+          environment: production
