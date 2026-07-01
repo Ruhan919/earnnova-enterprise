@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0A0B0E">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="EARNNOVA - Premium earning platform">
+  <link rel="manifest" href="manifest.json">
+  <title>EARNNOVA</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <link rel="stylesheet" href="/app/css/style.css">
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+</head>
+<body>
+
+<!-- Loading overlay while checking auth -->
+<style>
+.loading-overlay{position:fixed;inset:0;z-index:999;background:#0A0E1A;display:flex;align-items:center;justify-content:center;flex-direction:column}
+.loading-overlay.hide{display:none}
+.loading-spinner{width:40px;height:40px;border:3px solid rgba(255,255,255,0.05);border-top-color:#10B981;border-radius:50%;animation:spin .7s linear infinite;margin-bottom:12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:14px;color:#64748B}
+</style>
+<div class="loading-overlay" id="authLoading">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">Verifying session...</div>
+</div>
+
+<!-- SPLASH -->
+<noscript><style>#splash{display:none}#authPage{display:flex!important}</style></noscript>
+<div id="splash" style="display:none">
+  <div class="splash-logo">E</div>
+  <div class="splash-title">EARNNOVA</div>
+  <div class="splash-dot"></div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- BLOCK PAGE -->
+<div id="blockPage" class="page-view hidden">
+  <div class="block-container">
+    <div class="block-icon">🚫</div>
+    <h1 class="block-title">Account Blocked</h1>
+    <p class="block-reason" id="blockReason">Policy violation</p>
+    <div class="block-timer-wrap">
+      <div class="block-timer-label">Time remaining</div>
+      <div class="block-timer" id="blockTimer">0d 0h 0m</div>
+    </div>
+    <p class="block-footer-text">Auto-expires. Review <a href="terms.html" target="_blank" style="color:var(--emerald);">Terms</a></p>
+  </div>
+</div>
+
+<!-- ===== MAIN APP ===== -->
+<div id="appPage" class="page-view hidden">
+  
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <span class="status-time" id="statusTime">9:41</span>
+    <span class="status-icons">📶 🔋</span>
+  </div>
+  
+  <!-- Scrollable Content -->
+  <div class="app-content" id="appContent">
+    
+    <!-- ===== HOME PAGE ===== -->
+    <div id="page-home" class="page active">
+      <!-- Top Bar -->
+      <div class="earn-top-bar">
+        <div>
+          <div class="earn-balance-label"><span id="userTypeBadge" class="badge-user">👤 USER</span> Balance</div>
+          <div class="earn-balance" id="balanceDisplay">$0.00</div>
+        </div>
+        <div class="earn-user-info">
+          <span class="earn-user-id" id="userIDDisplay">ID: ---</span>
+          <button class="btn-admin-toggle" id="adminToggleBtn" title="Admin" style="display:none"><i class="fas fa-shield-halved"></i></button>
+        </div>
+      </div>
+
+      <!-- AdBlock Warning -->
+      <div id="adblockWarning" class="adblock-warning"><span class="abw-icon">🚫</span><div class="abw-text"><strong>Ad Blocker Detected</strong>Please disable your ad blocker to support the platform and earn rewards.</div></div>
+
+      <!-- Promo Slider/Carousel -->
+      <div class="slider-container">
+        <div class="slider-track" id="sliderTrack"></div>
+        <div class="slider-dots" id="sliderDots"></div>
+      </div>
+
+      <!-- Stats Row -->
+      <div class="home-stats">
+        <div class="home-stat"><span class="hs-icon">📺</span><span class="hs-num" id="statAds">0</span><span class="hs-label">Ads</span></div>
+        <div class="home-stat"><span class="hs-icon">👥</span><span class="hs-num" id="statRefs">0</span><span class="hs-label">Referrals</span></div>
+        <div class="home-stat"><span class="hs-icon">💸</span><span class="hs-num" id="statEarned">$0</span><span class="hs-label">Earned</span></div>
+      </div>
+
+      <!-- Daily Progress -->
+      <div class="earn-progress">
+        <div class="earn-progress-row"><span>📊 Today</span><span class="earn-progress-count" id="dailyLimitDisplay">0/30</span></div>
+        <div class="earn-progress-bar"><div class="earn-progress-fill" id="dailyProgressFill" style="width:0%"></div></div>
+      </div>
+
+      <!-- Streak -->
+      <div class="earn-streak"><span>🔥 Streak</span><span class="earn-streak-count" id="streakCount">0 days</span></div>
+
+      <!-- Quick Actions -->
+      <div class="home-actions">
+        <button class="home-action-btn" onclick="navigate('earn')"><span>🎬</span>Watch</button>
+        <button class="home-action-btn" onclick="navigate('withdraw')"><span>💳</span>Withdraw</button>
+        <button class="home-action-btn" onclick="navigate('plans')"><span>📋</span>Plans</button>
+        <button class="home-action-btn" onclick="navigate('referrals')"><span>👥</span>Refer</button>
+      </div>
+
+      <!-- Cooldown -->
+      <div id="cooldownSection" class="hidden">
+        <div class="earn-cooldown">
+          <div class="cooldown-icon">⏳</div>
+          <div class="cooldown-label">Next ad available in</div>
+          <div class="cooldown-timer" id="cooldownTimer">10:00</div>
+        </div>
+      </div>
+
+      <!-- Admin Panel (Full Tabbed Interface) -->
+      <div id="adminPanel" class="admin-panel hidden">
+        <div class="admin-panel-header"><h3>🛡️ Admin Panel</h3><button class="btn-close-panel" onclick="toggleAdminPanel()">✕</button></div>
+        
+        <!-- Stats Overview -->
+        <div class="admin-stats-row">
+          <div class="admin-mini-stat"><span class="ams-num" id="adminUsers">0</span><span class="ams-lbl">Users</span></div>
+          <div class="admin-mini-stat"><span class="ams-num" id="adminWD">0</span><span class="ams-lbl">Pending WD</span></div>
+          <div class="admin-mini-stat"><span class="ams-num" id="adminBalance">$0</span><span class="ams-lbl">Total Bal</span></div>
+        </div>
+
+        <!-- Ad Price Settings -->
+        <div class="admin-section-title">💰 Ad Pricing</div>
+        <div class="admin-price-row">
+          <span>Min:</span>
+          <input type="number" id="adminPriceMin" step="0.01" min="0.01" value="0.05" class="admin-price-input">
+          <span>Max:</span>
+          <input type="number" id="adminPriceMax" step="0.01" min="0.01" value="0.50" class="admin-price-input">
+          <button class="btn btn-amber btn-sm" onclick="saveAdPrices()">💾 Save</button>
+        </div>
+
+        <!-- Tabs -->
+        <div class="admin-tabs">
+          <button class="admin-tab active" data-atab="stats">📊 Overview</button>
+          <button class="admin-tab" data-atab="users">👥 Users</button>
+          <button class="admin-tab" data-atab="plans">📋 Plans</button>
+          <button class="admin-tab" data-atab="withdrawals">💳 WD</button>
+          <button class="admin-tab" data-atab="notifications">📨 Notif</button>
+        </div>
+
+        <!-- Tab Content: Overview -->
+        <div id="adminSectionStats" class="admin-section active">
+          <div class="admin-search">
+            <input type="text" id="adminSearchInput" placeholder="Search by ID, email, or name..." onkeydown="if(event.key==='Enter')adminSearch()">
+            <button class="btn btn-primary btn-sm" onclick="adminSearch()">🔍 Search</button>
+          </div>
+          <div id="adminSearchResults" class="admin-results"><div class="admin-empty">Search for a user to manage</div></div>
+        </div>
+        
+        <!-- Tab Content: Users -->
+        <div id="adminSectionUsers" class="admin-section">
+          <div class="admin-section-title" style="margin-top:0">All Users <button class="btn btn-sm btn-outline" onclick="adminLoadUsers()" style="float:right">🔄 Refresh</button></div>
+          <div id="adminUsersList"><div class="admin-empty">Loading...</div></div>
+        </div>
+        
+        <!-- Tab Content: Plans -->
+        <div id="adminSectionPlans" class="admin-section">
+          <div class="admin-section-title" style="margin-top:0">Plans <button class="btn btn-sm btn-primary" onclick="adminAddPlan()" style="float:right">+ Add</button></div>
+          <div id="adminPlansList"><div class="admin-empty">Loading...</div></div>
+        </div>
+        
+        <!-- Tab Content: Withdrawals -->
+        <div id="adminSectionWithdrawals" class="admin-section">
+          <div class="admin-section-title" style="margin-top:0">Withdrawals <button class="btn btn-sm btn-outline" onclick="adminLoadWithdrawals()" style="float:right">🔄 Refresh</button></div>
+          <div id="adminWDList"><div class="admin-empty">Loading...</div></div>
+        </div>
+        
+        <!-- Tab Content: Notifications -->
+        <div id="adminSectionNotifications" class="admin-section">
+          <div class="admin-section-title" style="margin-top:0">Send Notification</div>
+          <input type="text" id="adminNotifTitle" placeholder="Notification title" style="width:100%;padding:10px;border-radius:8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);color:#fff;margin-bottom:8px">
+          <textarea id="adminNotifMsg" placeholder="Notification message" rows="3" style="width:100%;padding:10px;border-radius:8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);color:#fff;margin-bottom:8px;resize:vertical"></textarea>
+          <button class="btn btn-primary btn-sm btn-block" onclick="adminSendNotif()">📨 Send to All</button>
+        </div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="section-title">📜 Recent Activity</div>
+      <div id="recentList" class="activity-list">
+        <div class="home-empty">Start earning!<br><button class="btn btn-primary btn-sm mt-1" onclick="navigate('earn')">Watch First Ad →</button></div>
+      </div>
+    </div>
+
+    <!-- ===== EARN PAGE ===== -->
+    <div id="page-earn" class="page">
+      <div class="page-header"><h2>🎬 Earn Center</h2></div>
+      
+      <div class="daily-limit-bar">
+        <span>📊 Today's usage</span>
+        <span class="daily-limit-count" id="earnDailyLimit">0/30</span>
+      </div>
+      
+      <div class="earn-streak"><span>🔥 Streak Bonus</span><span class="earn-streak-count" id="earnStreakCount">0 days</span></div>
+      
+      <div id="earnCooldownSection" class="hidden">
+        <div class="earn-cooldown">
+          <div class="cooldown-icon">⏳</div>
+          <div class="cooldown-label">Next ad in</div>
+          <div class="cooldown-timer" id="earnCooldownTimer">10:00</div>
+        </div>
+      </div>
+      
+      <div class="earn-batch">
+        <button class="btn btn-primary btn-sm btn-block" onclick="startBatchWatch(3)">📦 3x Batch</button>
+        <button class="btn btn-amber btn-sm btn-block" onclick="startBatchWatch(5)">🔥 5x Batch</button>
+      </div>
+      
+      <div class="section-title">📺 Available Ads</div>
+      <div class="ads-grid" id="adsGrid">
+        <div class="skeleton"></div><div class="skeleton mt-1"></div>
+      </div>
+      
+      <div id="adsterra-banner" class="ad-banner-zone"></div>
+    </div>
+
+    <!-- ===== WITHDRAW PAGE ===== -->
+    <div id="page-withdraw" class="page">
+      <div class="page-header"><h2>💳 Withdraw</h2></div>
+      <div class="wd-balance-card">
+        <span>Available Balance</span>
+        <strong id="wdBalance">$0.00</strong>
+      </div>
+      <div class="section-title">Choose Method</div>
+      <div class="wd-methods" id="wdMethods">
+        <div class="wd-method" data-method="bkash">💚 bKash</div>
+        <div class="wd-method" data-method="nagad">🧡 Nagad</div>
+        <div class="wd-method" data-method="binance">🟡 Binance</div>
+        <div class="wd-method" data-method="paypal">🔵 PayPal</div>
+        <div class="wd-method" data-method="wise">🟢 Wise</div>
+        <div class="wd-method" data-method="bank">🏦 Bank</div>
+        <div class="wd-method" data-method="crypto">₿ Crypto</div>
+      </div>
+      <div id="wdFormCard" class="wd-form-card hidden">
+        <h3 id="wdFormTitle">Details</h3>
+        <form id="wdForm">
+          <div class="input-group"><input type="number" id="wdAmount" min="5" step="0.01" placeholder="Amount (min $5)"></div>
+          <div id="wdFields"></div>
+          <button type="submit" class="btn btn-primary btn-block">Submit</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ===== PLANS PAGE ===== -->
+    <div id="page-plans" class="page">
+      <div class="page-header"><h2>📋 Plans</h2></div>
+      <div id="plansContainer" class="plans-grid">
+        <div class="skeleton" style="height:120px"></div>
+      </div>
+    </div>
+
+    <!-- ===== REFERRALS PAGE ===== -->
+    <div id="page-referrals" class="page">
+      <div class="page-header"><h2>👥 Refer & Earn</h2></div>
+      <div class="ref-hero">
+        <div class="ref-hero-icon">👥</div>
+        <h3>Invite Friends, Get $0.50</h3>
+        <p>Share your unique link</p>
+        <div class="ref-link-box">
+          <input type="text" id="refLinkInput" readonly>
+          <button id="copyRefBtn" class="btn btn-primary btn-sm">📋 Copy</button>
+        </div>
+      </div>
+      <div class="ref-stats">
+        <div><strong id="refCount">0</strong><small>Referrals</small></div>
+        <div><strong id="refEarned">$0.00</strong><small>Earned</small></div>
+      </div>
+      <div class="section-title">Milestones</div>
+      <div id="refMilestones" class="ref-milestones">
+        <div class="milestone" data-count="1"><span>🎯</span><div><strong>1 friend</strong><small>+$0.50</small></div><span class="ms-check">🔒</span></div>
+        <div class="milestone" data-count="5"><span>🎯</span><div><strong>5 friends</strong><small>+$2.50</small></div><span class="ms-check">🔒</span></div>
+        <div class="milestone" data-count="10"><span>🎯</span><div><strong>10 friends</strong><small>+$5.00</small></div><span class="ms-check">🔒</span></div>
+      </div>
+      <div class="section-title">Your Referrals</div>
+      <div id="refListBody"><div class="home-empty">No referrals yet</div></div>
+    </div>
+
+    <!-- ===== PROFILE PAGE ===== -->
+    <div id="page-profile" class="page">
+      <div class="page-header"><h2>👤 Profile</h2></div>
+      <div class="prof-card">
+        <div class="prof-avatar" id="profAvatar">U</div>
+        <div><h3 id="profName">User</h3><span class="prof-email" id="profEmail">email</span><span class="prof-id" id="profUID">ID: ---</span></div>
+      </div>
+      <form id="profileForm" class="prof-form">
+        <div class="input-group"><input type="text" id="profEditName" placeholder="Full Name"></div>
+        <div class="input-group"><input type="tel" id="profEditPhone" placeholder="Phone Number"></div>
+        <button type="submit" class="btn btn-primary btn-block btn-sm">Save</button>
+      </form>
+      <div class="prof-policies">
+        <a href="privacy.html" target="_blank">🔒 Privacy Policy</a>
+        <a href="terms.html" target="_blank">📋 Terms of Service</a>
+      </div>
+      <button id="logoutBtn" class="btn btn-outline btn-block" style="color:var(--red)">Sign Out</button>
+    </div>
+  </div>
+
+  <!-- ===== BOTTOM NAVIGATION ===== -->
+  <nav class="bottom-nav" id="bottomNav">
+    <button class="nav-item active" data-page="home"><span class="nav-icon">🏠</span><span>Home</span></button>
+    <button class="nav-item" data-page="earn"><span class="nav-icon">💰</span><span>Earn</span></button>
+    <button class="nav-item" data-page="withdraw"><span class="nav-icon">💳</span><span>Withdraw</span></button>
+    <button class="nav-item" data-page="plans"><span class="nav-icon">📋</span><span>Plans</span></button>
+    <button class="nav-item" data-page="referrals"><span class="nav-icon">👥</span><span>Refer</span></button>
+    <button class="nav-item" data-page="profile"><span class="nav-icon">👤</span><span>Profile</span></button>
+  </nav>
+</div>
+
+<!-- OTP VERIFICATION MODAL -->
+<div id="verifyModal" class="modal-overlay otp-overlay">
+  <div class="otp-card">
+    <div class="otp-icon-wrap">
+      <div class="otp-envelope">✉️</div>
+      <div class="otp-checkmark">✓</div>
+    </div>
+    <h2 class="otp-title">Check Your Email</h2>
+    <p class="otp-desc">We've sent a 6-digit verification code to</p>
+    <p class="otp-email" id="otpEmail">user@example.com</p>
+    <p class="otp-spam-note">📩 Check your spam folder if you don't see it</p>
+    <div class="otp-inputs" id="otpInputs">
+      <input class="otp-box" id="otp0" maxlength="1" inputmode="numeric" pattern="[0-9]" autofocus>
+      <input class="otp-box" id="otp1" maxlength="1" inputmode="numeric" pattern="[0-9]">
+      <input class="otp-box" id="otp2" maxlength="1" inputmode="numeric" pattern="[0-9]">
+      <input class="otp-box" id="otp3" maxlength="1" inputmode="numeric" pattern="[0-9]">
+      <input class="otp-box" id="otp4" maxlength="1" inputmode="numeric" pattern="[0-9]">
+      <input class="otp-box" id="otp5" maxlength="1" inputmode="numeric" pattern="[0-9]">
+    </div>
+    <button class="otp-verify-btn" id="otpVerifyBtn" onclick="submitOTP()">Verify</button>
+    <div class="otp-resend" id="otpResend">
+      <span class="otp-resend-label">Didn't receive the email?</span>
+      <span id="otpTimerText" class="otp-timer-text">Resend in <strong id="otpCountdown">30</strong>s</span>
+      <button class="otp-refresh" id="otpRefreshBtn" onclick="resendOTP()" style="display:none">📧 Resend Code</button>
+    </div>
+    <div class="otp-firebase-badge">🔒 Secured by Firebase</div>
+    <p class="otp-error" id="otpError" style="display:none">❌ Invalid code. Try again.</p>
+  </div>
+</div>
+
+<!-- AD WATCH MODAL -->
+<div id="adModal" class="modal-overlay">
+  <div class="ad-modal-glass">
+    <div class="ad-modal-header">
+      <span class="ad-modal-title">🎬 Watch & Earn</span>
+      <button class="ad-modal-close" onclick="closeAdModal()">✕</button>
+    </div>
+    <div class="ad-modal-body" id="modalAdContent">
+      <div class="ad-modal-adzone" id="adPlayerZone">
+        <div class="ad-modal-placeholder">
+          <div class="ad-placeholder-icon">📺</div>
+          <p class="ad-placeholder-text">Ad will appear here</p>
+        </div>
+      </div>
+    </div>
+    <div class="ad-modal-footer" id="modalAdFooter">
+      <div class="ad-modal-stats">
+        <div class="ad-modal-stat">
+          <span class="ams-label">Reward</span>
+          <span class="ams-value ams-reward" id="adRewardLabel">+$0.00</span>
+        </div>
+        <div class="ad-modal-stat">
+          <span class="ams-label">Time</span>
+          <span class="ams-value" id="timeLeft">0s</span>
+        </div>
+      </div>
+      <button id="adActionBtn" class="btn-claim" disabled>⏳ Loading...</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTIFICATION POPUP -->
+<div id="notifModal" class="modal-overlay">
+  <div class="modal glass-premium" style="max-width:360px;padding:24px">
+    <div class="notif-icon" id="notifIcon">🎉</div>
+    <div class="notif-modal-text"><h2 id="notifTitle">Earn!</h2><p id="notifMsg">Watch ads, earn rewards</p></div>
+    <button class="btn btn-primary btn-block mt-2" onclick="closeNotif()">OK</button>
+  </div>
+</div>
+
+<script src="/app/js/supabase-config.js"></script>
+<script src="/app/js/app.js"></script>
+<script src="/app/js/admin.js"></script>
+<script>
+// HOME PAGE AUTH GUARD: redirect to login if not authenticated
+// Single source of truth — onAuthStateChanged handles this
+var _loadingEl = document.getElementById('authLoading');
+var _authResolved = false;
+
+auth.onAuthStateChanged(function(user) {
+  _authResolved = true;
+  if (!user) {
+    // Not logged in → redirect to login
+    window.location.href = 'login.html';
+  }
+  // If logged in: app.js will hide loading overlay when dashboard is ready (initApp)
+  // This prevents a blank gap where loading is hidden but dashboard hasn't rendered yet
+});
+
+// Safety #1: if Firebase never resolves (CDN failure), redirect to login
+setTimeout(function() {
+  if (!_authResolved) {
+    window.location.href = 'login.html';
+  }
+}, 8000);
+
+// Safety #2: if auth resolved but dashboard never rendered, reload page
+setTimeout(function() {
+  if (_authResolved) {
+    var _sp = document.getElementById('splash');
+    var _ap = document.getElementById('appPage');
+    // If splash is still hidden and appPage is still hidden after 15s, something is wrong
+    if (_ap && _ap.classList.contains('hidden') && _sp && _sp.style.display === 'none') {
+      console.warn('Dashboard never rendered — reloading');
+      window.location.href = window.location.href;
+    }
+  }
+}, 15000);
+</script>
+<div id="container-ac40f76d59b8e8c281fb380b91c2bf21" style="display:none"></div>
+</body></html>

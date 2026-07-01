@@ -1,0 +1,6 @@
+DirectoryIndex index.php
+RewriteEngine On
+RewriteRule ^(.*)?$ public/$1 [L]
+<FilesMatch "\.(env|json|lock|md)$">
+    Require all denied
+</FilesMatch>

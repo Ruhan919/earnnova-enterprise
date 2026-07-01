@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>EARNNOVA — Sign Up</title>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="/app/css/style.css">
+<style>
+body{margin:0;background:#080A12;overflow:hidden;display:flex;align-items:center;justify-content:center;min-height:100vh}
+.auth-page-wrap{position:relative;z-index:10;width:100%;max-width:420px;padding:20px;box-sizing:border-box;perspective:1000px}
+#authContainer .auth-glass-container{transform-style:preserve-3d;transition:transform 0.3s cubic-bezier(0.23,1,0.32,1)}
+.ambient-g1,.ambient-g2{position:fixed;width:400px;height:400px;border-radius:50%;filter:blur(100px);pointer-events:none;z-index:0;opacity:0.3}
+.ambient-g1{top:-120px;left:-80px;background:rgba(212,175,55,0.2)}
+.ambient-g2{bottom:-120px;right:-80px;background:rgba(16,185,129,0.15)}
+#particles-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+@keyframes floatParticle{0%{transform:translateY(100vh) scale(0);opacity:0}10%{opacity:1}90%{opacity:1}100%{transform:translateY(-10vh) scale(1);opacity:0}}
+.particle{position:absolute;width:3px;height:3px;background:rgba(212,175,55,0.5);border-radius:50%;box-shadow:0 0 6px rgba(212,175,55,0.3);animation:floatParticle linear infinite}
+</style>
+</head>
+<body>
+<div class="ambient-g1"></div><div class="ambient-g2"></div>
+<div id="particles-canvas"></div>
+
+<div class="auth-page-wrap">
+  <div id="authContainer" class="auth-glass-container" style="position:relative">
+    <div class="auth-glass-brand">
+      <div class="auth-glass-logo">✦ EARNNOVA</div>
+      <div class="auth-glass-underline"></div>
+      <div class="auth-glass-subtitle">Join and start earning</div>
+    </div>
+    <div id="alertBox" class="auth-glass-alert"></div>
+    
+    <!-- REGISTER FORM -->
+    <form id="registerForm">
+      <div class="auth-glass-input"><i class="fas fa-user"></i><input type="text" id="regName" placeholder="Full Name" required></div>
+      <div class="auth-glass-input"><i class="fas fa-envelope"></i><input type="email" id="regEmail" placeholder="Email" required></div>
+      <div class="auth-glass-input"><i class="fas fa-lock"></i><input type="password" id="regPassword" placeholder="Password (6+ chars)" required minlength="6"></div>
+      <div class="auth-glass-input"><i class="fas fa-gift"></i><input type="text" id="regReferral" placeholder="Referral Code (optional)"></div>
+      <button type="submit" id="registerBtn" class="auth-glass-btn">Create Account</button>
+    </form>
+    
+    <div class="auth-glass-footer">
+      <span class="auth-glass-muted">Already have an account?</span>
+      <a href="login.html" class="auth-glass-link">Sign In</a>
+    </div>
+    <div class="auth-glass-policy">
+      <a href="privacy.html" target="_blank" class="auth-glass-link">Privacy</a>
+      <span class="auth-glass-dot">•</span>
+      <a href="terms.html" target="_blank" class="auth-glass-link">Terms</a>
+    </div>
+  </div>
+</div>
+
+<script src="/app/js/supabase-config.js"></script>
+<script>
+// ===== PARTICLES =====
+(function(){var c=document.getElementById('particles-canvas');if(!c)return;for(var i=0;i<25;i++){var p=document.createElement('div');p.className='particle';p.style.left=Math.random()*100+'%';p.style.animationDuration=(12+Math.random()*20)+'s';p.style.animationDelay=Math.random()*20+'s';p.style.width=p.style.height=(2+Math.random()*3)+'px';c.appendChild(p)}})();
+
+// ===== 3D TILT =====
+(function(){var ct=document.getElementById('authContainer');if(!ct)return;
+ct.addEventListener('touchmove',function(e){var t=e.touches[0];if(!t)return;var r=ct.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,dx=(t.clientX-cx)/(r.width/2),dy=(t.clientY-cy)/(r.height/2),rx=Math.max(-6,Math.min(6,-dy*5)),ry=Math.max(-6,Math.min(6,dx*5));ct.style.transform='perspective(600px) rotateX('+rx+'deg) rotateY('+ry+'deg) scale3d(1.02,1.02,1.02)'},{passive:true});
+ct.addEventListener('touchend',function(){ct.style.transform='perspective(600px) rotateX(0deg) rotateY(0deg) scale3d(1,1,1)';ct.style.transition='transform 0.5s cubic-bezier(0.23,1,0.32,1)';setTimeout(function(){if(ct)ct.style.transition=''},500)},{passive:true});
+ct.addEventListener('mousemove',function(e){var r=ct.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,dx=(e.clientX-cx)/(r.width/2),dy=(e.clientY-cy)/(r.height/2),rx=Math.max(-4,Math.min(4,-dy*3)),ry=Math.max(-4,Math.min(4,dx*3));ct.style.transform='perspective(600px) rotateX('+rx+'deg) rotateY('+ry+'deg) scale3d(1.01,1.01,1.01)';ct.style.transition='transform 0.15s ease-out'});
+ct.addEventListener('mouseleave',function(){ct.style.transform='perspective(600px) rotateX(0deg) rotateY(0deg) scale3d(1,1,1)';ct.style.transition='transform 0.5s cubic-bezier(0.23,1,0.32,1)';setTimeout(function(){if(ct)ct.style.transition=''},500)});})();
+
+// ===== REGISTER HANDLER =====
+function showAlert(msg,type){
+  var box=document.getElementById('alertBox');
+  if(!box)return;
+  box.textContent=msg;
+  box.className='auth-glass-alert '+(type||'error');
+  box.style.display='block';
+  if(type==='error'){box.classList.add('shake-error');setTimeout(function(){box.classList.remove('shake-error')},600)}
+  setTimeout(function(){box.style.display='none'},5000);
+}
+function getAuthError(err){
+  var m={'auth/user-not-found':'No account with this email','auth/wrong-password':'Invalid password','auth/email-already-in-use':'This email is already registered','auth/weak-password':'Password must be 6+ characters','auth/invalid-email':'Please enter a valid email','auth/too-many-requests':'Too many attempts. Try again later','auth/network-request-failed':'Network error. Check your connection','auth/popup-closed-by-user':'Sign-in cancelled'};
+  return m[err.code]||err.message||'An error occurred';
+}
+
+// ===== DISPOSABLE EMAIL BLOCKLIST =====
+var DISPOSABLE_DOMAINS=['mailinator.com','guerrillamail.com','tempmail.com','10minutemail.com','throwaway.email','trashmail.com','yopmail.com','sharklasers.com','spam4.me','grr.la','mailnator.com','mailexpire.com','maildrop.cc','mintemail.com','getnada.com','temp-mail.org','tempemail.net','tempmail.net','mail.tm','guerrillamail.org','guerrillamail.net','throwawaymail.com','trashmail.net','yopmail.fr','yopmail.net','spambob.com','spambog.com','spamcowboy.com','spamday.com','spamdecoy.net','spameater.com','spamgourmet.com','spamhereplease.com','spamhole.com','spamify.com','spaminator.de','spamkill.info','spaml.com','spamserver.de','spamspot.com','spamthis.co.uk','spamtrail.com','spamwins.com','tempalias.com','tempmail.xyz','tmpmail.net','trash2009.com','trash360.com','trashdevil.de','trashmail.org','trashymail.com','wegwerfmail.de','wegwerfmail.net','wegwerfmail.org','wh4f.org','whyspam.me','willselfdestruct.com','xagloo.com','xemaps.com','xents.com','xmaily.com','xoxy.net','yep.it','yogamaven.com','zehnminutenmail.de','zippymail.info','zoaxe.com','zoemail.com','zoemail.net','zoemail.org','getairmail.com','getonemail.com','mailcatch.com','maileater.com','mailmetrash.com','mailzilla.com','mohmal.com','mytrashmail.com','nowmymail.com','receiveee.com','sofort-mail.de','spambox.info','spambox.me','tittbit.in','tmail.ws','tmpeml.com','tmpjr.me','trbvm.com','trbvn.com','turual.com','tyldd.com','upliftnow.com','veryrealemail.com','winemaven.info','wronghead.com','wuzup.net','zehnminutenmail.de'];
+function isDisposableEmail(email){var domain=email.split('@')[1].toLowerCase();return DISPOSABLE_DOMAINS.includes(domain);}
+
+document.getElementById('registerForm').addEventListener('submit',async function(e){
+  e.preventDefault();
+  var name=document.getElementById('regName').value.trim();
+  var email=document.getElementById('regEmail').value.trim();
+  var password=document.getElementById('regPassword').value;
+  var ref=document.getElementById('regReferral').value.trim();
+  var btn=document.getElementById('registerBtn');
+  if(password.length<6){showAlert('Password must be 6+ characters');return;}
+  if(isDisposableEmail(email)){showAlert('Temporary emails are not allowed. Please use a permanent email address.');return;}
+  btn.disabled=true;btn.innerHTML='⏳ Creating account...';
+  try{
+    var cred=await auth.createUserWithEmailAndPassword(email,password);
+    var user=cred.user;
+    await user.updateProfile({displayName:name});
+    var userData={
+      uid:user.uid,email:email||'',name:name,photo:'',phone:'',
+      balance:0,totalEarned:0,totalWithdrawn:0,adsWatched:0,todayAds:0,lastAdDate:'',
+      referralCode:Math.random().toString(36).substring(2,10).toUpperCase(),referredBy:'',
+      streak:0,lastActive:'',isActive:true,isAdmin:email===ADMIN_EMAIL,
+      createdAt:firebase.firestore.FieldValue.serverTimestamp(),lastLogin:firebase.firestore.FieldValue.serverTimestamp()
+    };
+    if(ref){
+      try{
+        var refSnap=await usersRef.where('referralCode','==',ref.toUpperCase()).get();
+        if(!refSnap.empty){
+          var referrer=refSnap.docs[0];
+          userData.referredBy=referrer.id;
+          await usersRef.doc(referrer.id).update({balance:firebase.firestore.FieldValue.increment(0.50),totalEarned:firebase.firestore.FieldValue.increment(0.50)});
+          await referralsRef.add({referrerId:referrer.id,referredId:user.uid,referredName:name,bonus:0.50,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+        }
+      }catch(er){}
+    }
+    await usersRef.doc(user.uid).set(userData);
+    // Don't redirect manually! onAuthStateChanged listener below handles it
+    btn.innerHTML='✅ Created! Redirecting...';
+  }catch(err){
+    showAlert(getAuthError(err));
+    btn.disabled=false;btn.textContent='Create Account';
+  }
+});
+
+// SINGLE source of truth: onAuthStateChanged handles ALL redirects
+auth.onAuthStateChanged(function(user){if(user)window.location.href='home.html'});
+</script>
+</body>
+</html>

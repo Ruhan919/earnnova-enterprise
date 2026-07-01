@@ -1,0 +1,11 @@
+google.com, pub-9307459733796967, DIRECT, f08c47fec0942fa0
+# Adsterra / CPM Network
+adsterra.com, 430ec9a9c3b2a1492b22ecb72e4ace01, DIRECT
+effectivecpmnetwork.com, ac40f76d59b8e8c281fb380b91c2bf21, RESELLER
+effectivecpmnetwork.com, 2e83eab240b4afc016ede828af8a897a, RESELLER
+effectivecpmnetwork.com, fcac01bcf8a7bc1e80bbba3ba4a24fed, RESELLER
+highperformanceformat.com, 679c41f5cd1133dfcfb8ddd3254605d4, RESELLER
+highperformanceformat.com, 11127fe81ff9922c5ece58925c849fd8, RESELLER
+effectivecpmnetwork.com, 5be534a9c13e9ed7a663c6cc527b5b74, RESELLER
+# Monetag
+5gvci.com, 11170708, RESELLER

@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#2196F3">
+    <meta name="description" content="EARNNOVA BETA - Earn money by watching ads, completing tasks, and referring friends.">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="EARNNOVA">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="/app/assets/icon-192.png">
+    <title>EARNNOVA BETA - Earn. Grow. Thrive.</title>
+    <link rel="stylesheet" href="/app/css/style.css">
+    <!-- Firebase SDKs (v8 compat) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-analytics.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js"></script>
+    
+    <!-- For modular SDK (v9+), use type="module" instead:
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+      import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+      // ... etc
+    </script>
+    -->
+    <style>
+        /* App shell loading state */
+        .app-shell { display: none; }
+        .app-shell.active { display: flex; }
+    </style>
+</head>
+<body>
+    <!-- ===== SPLASH SCREEN ===== -->
+    <div id="splashScreen" class="splash-screen">
+        <img src="/app/assets/logo-splash.svg" alt="EARNNOVA" class="splash-logo">
+        <h1 class="splash-title">EARNNOVA</h1>
+        <div class="splash-beta">BETA</div>
+        <p class="splash-tagline">Earn. Grow. Thrive.</p>
+        <div class="splash-loader"></div>
+    </div>
+
+    <!-- ===== AUTH PAGE ===== -->
+    <div id="authPage" class="auth-page app-shell">
+        <div class="auth-container">
+            <div class="auth-logo">
+                <img src="/app/assets/logo.svg" alt="EARNNOVA">
+                <h1>EARNNOVA</h1>
+                <p id="authSubtitle">Welcome Back!</p>
+            </div>
+
+            <div id="alertBox" class="alert"></div>
+
+            <!-- Login Form -->
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="loginEmail" placeholder="you@email.com" required autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" placeholder="••••••••" required autocomplete="current-password">
+                </div>
+                <div class="flex-between mb-2">
+                    <label style="font-size:0.85rem;color:var(--text-secondary);cursor:pointer;">
+                        <input type="checkbox" id="rememberMe"> Remember me
+                    </label>
+                    <a href="#" id="forgotLink" style="font-size:0.85rem;">Forgot Password?</a>
+                </div>
+                <button type="submit" id="loginBtn" class="btn btn-primary">Sign In</button>
+            </form>
+
+            <form id="registerForm" style="display:none;">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="regName" placeholder="Your full name" required>
+                </div>
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="regEmail" placeholder="you@email.com" required autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="regPassword" placeholder="Min 6 characters" required minlength="6" autocomplete="new-password">
+                </div>
+                <div class="form-group">
+                    <label>Referral Code (optional)</label>
+                    <input type="text" id="regReferral" placeholder="Enter code if referred">
+                </div>
+                <button type="submit" id="registerBtn" class="btn btn-primary">Create Account</button>
+            </form>
+
+            <form id="forgotForm" style="display:none;">
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="forgotEmail" placeholder="you@email.com" required>
+                </div>
+                <button type="submit" id="forgotBtn" class="btn btn-primary">Send Reset Link</button>
+                <p class="mt-1 text-center" style="font-size:0.85rem;">
+                    <a href="#" id="backToLogin">Back to Sign In</a>
+                </p>
+            </form>
+
+            <div id="authDivider" class="divider"><span>or continue with</span></div>
+            <button id="googleSignInBtn" class="btn btn-google">
+                <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/></svg>
+                Continue with Google
+            </button>
+
+            <div id="authToggle" class="auth-footer">
+                <span id="authToggleText">Don't have an account?</span>
+                <a href="#" id="authToggleLink">Sign Up</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MAIN APP (Dashboard) ===== -->
+    <div id="appPage" class="app-layout app-shell">
+        <!-- Mobile Toggle -->
+        <button id="mobileToggle" class="mobile-toggle">☰</button>
+
+        <!-- Sidebar -->
+        <aside id="sidebar" class="sidebar">
+            <div class="sidebar-header">
+                <img src="/app/assets/logo.svg" alt="EARNNOVA">
+                <div>
+                    <h2>EARNNOVA</h2>
+                    <span>BETA v1.0</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav" id="userNav">
+                <div class="nav-item active" data-page="dashboard"><span class="icon">📊</span> Dashboard</div>
+                <div class="nav-item" data-page="earn"><span class="icon">💰</span> Earn</div>
+                <div class="nav-item" data-page="withdraw"><span class="icon">💳</span> Withdraw</div>
+                <div class="nav-item" data-page="history"><span class="icon">📜</span> History</div>
+                <div class="nav-item" data-page="referrals"><span class="icon">👥</span> Referrals</div>
+                <div class="nav-item" data-page="profile"><span class="icon">👤</span> Profile</div>
+                <div class="nav-item" data-page="notifications"><span class="icon">🔔</span> Notifications</div>
+            </nav>
+            <nav class="sidebar-nav" id="adminNav" style="border-top:1px solid #F0F0F0;">
+                <div class="nav-item" style="font-size:0.75rem;color:var(--text-hint);padding:8px 20px;text-transform:uppercase;letter-spacing:1px;">Admin Panel</div>
+                <div class="nav-item" data-page="admin-dashboard"><span class="icon">📊</span> Dashboard</div>
+                <div class="nav-item" data-page="admin-users"><span class="icon">👥</span> Users</div>
+                <div class="nav-item" data-page="admin-withdrawals"><span class="icon">💳</span> Withdrawals</div>
+                <div class="nav-item" data-page="admin-ads"><span class="icon">📢</span> Ads</div>
+                <div class="nav-item" data-page="admin-notifications"><span class="icon">🔔</span> Notify All</div>
+                <div class="nav-item" data-page="admin-reports"><span class="icon">📈</span> Reports</div>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">U</div>
+                    <div>
+                        <div class="user-name" id="sidebarUserName">User</div>
+                        <div class="user-email" id="sidebarUserEmail">user@email.com</div>
+                    </div>
+                </div>
+                <button id="logoutBtn" class="btn-logout">🚪 Sign Out</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content" id="mainContent">
+            <!-- Dashboard -->
+            <div id="page-dashboard" class="page-content">
+                <div class="page-header">
+                    <h1>Dashboard</h1>
+                    <p>Welcome back, <span id="dashUserName">User</span>! Here's your overview.</p>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card"><div class="stat-icon blue">💰</div><div class="stat-info"><h3 id="dashBalance">$0.00</h3><p>Total Balance</p></div></div>
+                    <div class="stat-card"><div class="stat-icon green">📺</div><div class="stat-info"><h3 id="dashAdsWatched">0</h3><p>Ads Watched</p></div></div>
+                    <div class="stat-card"><div class="stat-icon orange">👥</div><div class="stat-info"><h3 id="dashReferrals">0</h3><p>Referrals</p></div></div>
+                    <div class="stat-card"><div class="stat-icon purple">💸</div><div class="stat-info"><h3 id="dashEarned">$0.00</h3><p>Total Earned</p></div></div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><h3>Recent Transactions</h3></div>
+                    <div class="table-container"><table id="recentTransactions"><thead><tr><th>Type</th><th>Amount</th><th>Date</th><th>Status</th></tr></thead><tbody id="recentTxnBody"><tr><td colspan="4" class="text-center" style="color:var(--text-hint)">No transactions yet</td></tr></tbody></table></div>
+                </div>
+            </div>
+
+            <!-- Earn -->
+            <div id="page-earn" class="page-content" style="display:none;">
+                <div class="page-header"><h1>Earn Money</h1><p>Watch ads and complete tasks to earn rewards.</p></div>
+                <div class="stats-grid">
+                    <div class="stat-card"><div class="stat-icon blue">📺</div><div class="stat-info"><h3 id="availAds">0</h3><p>Available Ads</p></div></div>
+                    <div class="stat-card"><div class="stat-icon green">✅</div><div class="stat-info"><h3 id="completedToday">0</h3><p>Completed Today</p></div></div>
+                </div>
+                <div id="adsContainer" class="card"><div class="card-header"><h3>Available Ads</h3></div><div id="adsList" class="empty-state"><div class="empty-icon">📺</div><h3>No ads available</h3><p>Check back later for new earning opportunities.</p></div></div>
+            </div>
+
+            <!-- Withdraw -->
+            <div id="page-withdraw" class="page-content" style="display:none;">
+                <div class="page-header"><h1>Withdraw Funds</h1><p>Choose your preferred withdrawal method.</p></div>
+                <div class="stats-grid">
+                    <div class="stat-card"><div class="stat-icon blue">💰</div><div class="stat-info"><h3 id="wdBalance">$0.00</h3><p>Available Balance</p></div></div>
+                    <div class="stat-card"><div class="stat-icon green">💳</div><div class="stat-info"><h3 id="wdTotalWithdrawn">$0.00</h3><p>Total Withdrawn</p></div></div>
+                </div>
+                <div class="card"><div class="card-header"><h3>Withdrawal Methods</h3></div>
+                    <div class="methods-grid" id="wdMethods">
+                        <div class="method-card" data-method="bkash"><div class="method-icon">💚</div><h4>bKash</h4><p>Bangladesh</p></div>
+                        <div class="method-card" data-method="nagad"><div class="method-icon">🧡</div><h4>Nagad</h4><p>Bangladesh</p></div>
+                        <div class="method-card" data-method="binance"><div class="method-icon">🟡</div><h4>Binance</h4><p>Crypto</p></div>
+                        <div class="method-card" data-method="paypal"><div class="method-icon">🔵</div><h4>PayPal</h4><p>International</p></div>
+                        <div class="method-card" data-method="wise"><div class="method-icon">🟢</div><h4>Wise</h4><p>International</p></div>
+                        <div class="method-card" data-method="bank"><div class="method-icon">🏦</div><h4>Bank Transfer</h4><p>Direct bank</p></div>
+                        <div class="method-card" data-method="crypto"><div class="method-icon">₿</div><h4>Crypto Wallet</h4><p>BTC/ETH/USDT</p></div>
+                    </div>
+                </div>
+                <div class="card" id="wdFormCard" style="display:none;">
+                    <div class="card-header"><h3 id="wdFormTitle">Withdrawal Details</h3></div>
+                    <form id="wdForm">
+                        <div class="form-group"><label>Amount (USD)</label><input type="number" id="wdAmount" min="5" max="5000" step="0.01" placeholder="Min $5.00" required></div>
+                        <div id="wdFields"></div>
+                        <button type="submit" class="btn btn-primary">Submit Withdrawal</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- History -->
+            <div id="page-history" class="page-content" style="display:none;">
+                <div class="page-header"><h1>Transaction History</h1><p>All your earnings and withdrawals.</p></div>
+                <div class="card"><div class="table-container"><table><thead><tr><th>Type</th><th>Amount</th><th>Date</th><th>Status</th></tr></thead><tbody id="historyBody"><tr><td colspan="4" class="text-center" style="color:var(--text-hint)">No transactions</td></tr></tbody></table></div></div>
+            </div>
+
+            <!-- Referrals -->
+            <div id="page-referrals" class="page-content" style="display:none;">
+                <div class="page-header"><h1>Refer & Earn</h1><p>Share your referral link and earn bonuses.</p></div>
+                <div class="stats-grid">
+                    <div class="stat-card"><div class="stat-icon blue">👥</div><div class="stat-info"><h3 id="refCount">0</h3><p>Total Referrals</p></div></div>
+                    <div class="stat-card"><div class="stat-icon green">💰</div><div class="stat-info"><h3 id="refBonus">$0.00</h3><p>Referral Bonus</p></div></div>
+                </div>
+                <div class="card"><div class="card-header"><h3>Your Referral Link</h3></div>
+                    <div class="flex gap-2">
+                        <input type="text" id="refLink" readonly style="flex:1;padding:12px;border:2px solid #E0E0E0;border-radius:8px;font-size:0.95rem;">
+                        <button id="copyRefLink" class="btn btn-primary btn-sm" style="width:auto;">📋 Copy</button>
+                    </div>
+                </div>
+                <div class="card"><div class="card-header"><h3>Your Referrals</h3></div>
+                    <div class="table-container"><table><thead><tr><th>Name</th><th>Date Joined</th><th>Earned</th></tr></thead><tbody id="refBody"><tr><td colspan="3" class="text-center" style="color:var(--text-hint)">No referrals yet</td></tr></tbody></table></div>
+                </div>
+            </div>
+
+            <!-- Profile -->
+            <div id="page-profile" class="page-content" style="display:none;">
+                <div class="page-header"><h1>Profile</h1><p>Manage your account settings.</p></div>
+                <div class="card"><div class="flex gap-2" style="align-items:center;">
+                    <div class="user-avatar" id="profileAvatar" style="width:64px;height:64px;font-size:1.5rem;">U</div>
+                    <div><h3 id="profileName">User</h3><p id="profileEmail" style="color:var(--text-secondary);font-size:0.9rem;">email@email.com</p></div>
+                </div></div>
+                <div class="card"><div class="card-header"><h3>Account Details</h3></div>
+                    <form id="profileForm">
+                        <div class="form-group"><label>Full Name</label><input type="text" id="profileEditName"></div>
+                        <div class="form-group"><label>Phone</label><input type="tel" id="profileEditPhone" placeholder="+8801XXXXXXXXX"></div>
+                        <button type="submit" class="btn btn-primary">Update Profile</button>
+                    </form>
+                </div>
+                <div class="card"><div class="card-header"><h3>Account Security</h3></div>
+                    <button id="changePasswordBtn" class="btn btn-outline mb-2">🔑 Change Password</button>
+                    <div id="changePasswordForm" style="display:none;">
+                        <div class="form-group"><label>Current Password</label><input type="password" id="currentPwd"></div>
+                        <div class="form-group"><label>New Password</label><input type="password" id="newPwd" minlength="6"></div>
+                        <button id="savePwdBtn" class="btn btn-primary btn-sm">Save Password</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notifications -->
+            <div id="page-notifications" class="page-content" style="display:none;">
+                <div class="page-header"><h1>Notifications</h1><p>Stay updated with latest alerts.</p></div>
+                <div id="notificationsList"><div class="empty-state"><div class="empty-icon">🔔</div><h3>No notifications</h3><p>You're all caught up!</p></div></div>
+            </div>
+
+            <!-- Admin: Dashboard -->
+            <div id="page-admin-dashboard" class="page-content" style="display:none;">
+                <div class="page-header"><h1>Admin Dashboard</h1><p>System overview and statistics.</p></div>
+                <div class="stats-grid">
+                    <div class="stat-card"><div class="stat-icon blue">👥</div><div class="stat-info"><h3 id="adminTotalUsers">0</h3><p>Total Users</p></div></div>
+                    <div class="stat-card"><div class="stat-icon green">💰</div><div class="stat-info"><h3 id="adminTotalBalance">$0.00</h3><p>Total Balance</p></div></div>
+                    <div class="stat-card"><div class="stat-icon orange">💳</div><div class="stat-info"><h3 id="adminPendingWD">0</h3><p>Pending Withdrawals</p></div></div>
+                    <div class="stat-card"><div class="stat-icon purple">📺</div><div class="stat-info"><h3 id="adminTotalAds">0</h3><p>Total Ads</p></div></div>
+                </div>
+            </div>
+
+            <!-- Admin: Users -->
+            <div id="page-admin-users" class="page-content" style="display:none;">
+                <div class="page-header flex-between"><h1>User Management</h1></div>
+                <div class="card"><div class="table-container"><table><thead><tr><th>Name</th><th>Email</th><th>Balance</th><th>Referrals</th><th>Status</th><th>Actions</th></tr></thead><tbody id="adminUsersBody"><tr><td colspan="6" class="text-center" style="color:var(--text-hint)">Loading...</td></tr></tbody></table></div></div>
+            </div>
+
+            <!-- Admin: Withdrawals -->
+            <div id="page-admin-withdrawals" class="page-content" style="display:none;">
+                <div class="page-header flex-between"><h1>Withdrawal Requests</h1></div>
+                <div class="card"><div class="table-container"><table><thead><tr><th>User</th><th>Method</th><th>Amount</th><th>Details</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead><tbody id="adminWDBody"><tr><td colspan="7" class="text-center" style="color:var(--text-hint)">Loading...</td></tr></tbody></table></div></div>
+            </div>
+
+            <!-- Admin: Ads -->
+            <div id="page-admin-ads" class="page-content" style="display:none;">
+                <div class="page-header flex-between"><h1>Ad Management</h1><button id="addAdBtn" class="btn btn-primary btn-sm">+ Add Ad</button></div>
+                <div class="card"><div class="table-container"><table><thead><tr><th>Title</th><th>Reward</th><th>Duration</th><th>Status</th><th>Actions</th></tr></thead><tbody id="adminAdsBody"><tr><td colspan="5" class="text-center" style="color:var(--text-hint)">Loading...</td></tr></tbody></table></div></div>
+            </div>
+
+            <!-- Admin: Notifications -->
+            <div id="page-admin-notifications" class="page-content" style="display:none;">
+                <div class="page-header"><h1>Send Notification</h1><p>Send push notifications to all users.</p></div>
+                <div class="card"><form id="adminNotifyForm">
+                    <div class="form-group"><label>Title</label><input type="text" id="notifTitle" placeholder="Notification title" required></div>
+                    <div class="form-group"><label>Message</label><textarea id="notifMessage" rows="4" placeholder="Your message" required></textarea></div>
+                    <div class="form-group"><label>Type</label><select id="notifType"><option value="general">General</option><option value="promotion">Promotion</option><option value="security">Security</option></select></div>
+                    <button type="submit" class="btn btn-primary">Send to All Users</button>
+                </form></div>
+            </div>
+
+            <!-- Admin: Reports -->
+            <div id="page-admin-reports" class="page-content" style="display:none;">
+                <div class="page-header"><h1>Reports & Analytics</h1></div>
+                <div class="stats-grid">
+                    <div class="stat-card"><div class="stat-icon blue">📊</div><div class="stat-info"><h3 id="reportTodayEarnings">$0.00</h3><p>Today's Earnings</p></div></div>
+                    <div class="stat-card"><div class="stat-icon green">📈</div><div class="stat-info"><h3 id="reportWeekEarnings">$0.00</h3><p>This Week</p></div></div>
+                    <div class="stat-card"><div class="stat-icon orange">👤</div><div class="stat-info"><h3 id="reportNewUsers">0</h3><p>New Users Today</p></div></div>
+                </div>
+                <div class="card"><div class="card-header"><h3>Recent Activity</h3></div><div class="table-container"><table><thead><tr><th>Event</th><th>User</th><th>Time</th></tr></thead><tbody id="reportBody"><tr><td colspan="3" class="text-center" style="color:var(--text-hint)">Loading...</td></tr></tbody></table></div></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ===== AD WATCH MODAL ===== -->
+    <div id="adModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header"><h2 id="adModalTitle">Watch Ad</h2><button class="modal-close" onclick="closeAdModal()">✕</button></div>
+            <div class="modal-body text-center">
+                <div id="adCountdown" style="font-size:3rem;font-weight:700;color:var(--accent);margin:20px 0;">5</div>
+                <p id="adRewardText" style="color:var(--text-secondary);">Watch for 5 seconds to earn</p>
+                <div style="margin:20px 0;padding:40px;background:var(--background);border-radius:12px;color:var(--text-hint);">
+                    📺 Ad Content Display Area
+                </div>
+                <button id="watchAdBtn" class="btn btn-primary" disabled>⏳ Watch ad...</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== AD NETWORK SCRIPTS ===== -->
+    <!-- Main ad network loader -->
+    <script src="https://intermediatenormalconfederate.com/63/ec/26/63ec26f8e4bdecfd5ae777f3a96fa119.js"></script>
+    
+    <!-- 728x90 Banner Ad Config -->
+    <script>
+        atOptions = {
+            'key' : 'e877abd9733752f8dbd622496db4c8a3',
+            'format' : 'iframe',
+            'height' : 90,
+            'width' : 728,
+            'params' : {}
+        };
+    </script>
+    <script src="https://intermediatenormalconfederate.com/e877abd9733752f8dbd622496db4c8a3/invoke.js"></script>
+    
+    <!-- 320x50 Mobile Banner Ad Config -->
+    <script>
+        atOptions = {
+            'key' : 'b93981a2156c99e7ad6889545f4412c0',
+            'format' : 'iframe',
+            'height' : 50,
+            'width' : 320,
+            'params' : {}
+        };
+    </script>
+    <script src="https://intermediatenormalconfederate.com/b93981a2156c99e7ad6889545f4412c0/invoke.js"></script>
+    <script src="https://intermediatenormalconfederate.com/4f/ce/2d/4fce2d5c0aff67487512169e5ed4ba87.js"></script>
+
+    <!-- ===== SCRIPTS ===== -->
+    <script src="/app/js/firebase-config.js"></script>
+    <script src="/app/js/auth.js"></script>
+    <script src="/app/js/dashboard.js"></script>
+    <script src="/app/js/admin.js"></script>
+    <script src="/app/js/app.js"></script>
+    
+    <!-- Rewarded & Interstitial Ad Integration -->
+    <script>
+    // Global ad functions for the app
+    window.earnnovaAds = {
+        // Rewarded Popup - user must watch till end to get reward
+        showRewarded: function() {
+            return show_9622450('pop').then(() => {
+                // User watched ad till the end
+                return true;
+            }).catch((e) => {
+                console.warn('Rewarded ad error:', e);
+                return false;
+            });
+        },
+        
+        // Rewarded Interstitial - full screen ad with reward
+        showRewardedInterstitial: function() {
+            return show_9622450().then(() => {
+                // User watched the ad - call your reward function
+                return true;
+            }).catch((e) => {
+                console.warn('Interstitial ad error:', e);
+                return false;
+            });
+        },
+        
+        // In-App Interstitial - shows between pages
+        showInApp: function() {
+            return show_9622450({
+                type: 'inApp',
+                inAppSettings: {
+                    frequency: 2,
+                    capping: 0.1,
+                    interval: 30,
+                    timeout: 5,
+                    everyPage: false
+                }
+            });
+        }
+    };
+    
+    // Auto-show in-app interstitial on page navigation
+    document.addEventListener('DOMContentLoaded', function() {
+        // Show in-app ad on first load (with delay)
+        setTimeout(() => {
+            if (window.earnnovaAds && window.earnnovaAds.showInApp) {
+                earnnovaAds.showInApp().catch(() => {});
+            }
+        }, 5000);
+    });
+    </script>
+</body>
+</html>

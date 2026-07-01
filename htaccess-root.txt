@@ -1,0 +1,25 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Redirect everything to public/ folder
+    RewriteRule ^(.*)?$ public/$1 [L]
+</IfModule>
+
+# Security: deny access to sensitive files
+<FilesMatch "\.(env|json|lock|md|gitignore|example)$">
+    Require all denied
+</FilesMatch>
+
+# PHP settings
+<IfModule mod_php.c>
+    php_value upload_max_filesize 64M
+    php_value post_max_size 64M
+    php_value max_execution_time 300
+    php_value max_input_time 300
+</IfModule>
+
+DirectoryIndex index.php
+
+ErrorDocument 403 https://errors.infinityfree.net/errors/403/
+ErrorDocument 404 https://errors.infinityfree.net/errors/404/
+ErrorDocument 500 https://errors.infinityfree.net/errors/500/
