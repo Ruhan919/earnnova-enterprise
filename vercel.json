@@ -1,0 +1,25 @@
+{
+  "framework": null,
+  "buildCommand": "composer install --no-interaction --prefer-dist --optimize-autoloader && npm install --legacy-peer-deps && npm run build && php artisan key:generate --force && php artisan optimize",
+  "outputDirectory": "public",
+  "installCommand": "composer install --no-interaction --prefer-dist --optimize-autoloader",
+  "devCommand": "php artisan serve",
+  "routes": [
+    { "src": "/assets/(.*)", "dest": "/assets/$1" },
+    { "src": "/storage/(.*)", "dest": "/storage/$1" },
+    { "src": "/favicon.ico", "dest": "/favicon.ico" },
+    { "src": "/robots.txt", "dest": "/robots.txt" },
+    { "src": "/(.*)", "dest": "/index.php" }
+  ],
+  "functions": {
+    "api/index.php": {
+      "runtime": "vercel-php@0.7.2",
+      "memory": 512,
+      "maxDuration": 30
+    }
+  },
+  "github": {
+    "silent": true,
+    "autoJobCancel": true
+  }
+}
