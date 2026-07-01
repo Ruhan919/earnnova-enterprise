@@ -1,15 +1,18 @@
-FROM php:8.4-cli
+# Stage 1: Resolve dependencies using the composer image
+FROM composer:latest AS staging
+WORKDIR /app
+COPY composer.json ./
+RUN composer update --no-interaction --prefer-dist --no-dev 2>&1
 
-RUN apt-get update -qq && apt-get install -y -qq git unzip libzip-dev 2>&1 | tail -3 && \
-    docker-php-ext-install pdo pdo_mysql mbstring bcmath xml zip gd 2>&1 | tail -3
-
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Stage 2: Run the app
+FROM php:8.4-cli-alpine
+RUN apk add --no-cache git unzip
 
 WORKDIR /app
 COPY . .
+COPY --from=staging /app/vendor ./vendor/
+COPY --from=staging /app/composer.lock ./composer.lock
 
-RUN composer update --no-interaction --prefer-dist 2>&1 | tail -20 || \
-    echo "composer step done"
 RUN composer dump-autoload --no-interaction 2>&1 || true
 
 EXPOSE 8080
